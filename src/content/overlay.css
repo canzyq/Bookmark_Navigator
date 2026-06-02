@@ -1,0 +1,201 @@
+/* Bookmark Navigator Overlay Styles */
+/* Using scoped class names to avoid conflicts */
+
+.bn-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.bn-overlay-container {
+  width: 680px;
+  max-height: 70vh;
+  background: #1a1b26;
+  border: 1px solid #3b4261;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bn-search-wrapper {
+  padding: 12px 16px;
+  border-bottom: 1px solid #3b4261;
+}
+
+.bn-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: #24283b;
+  border: 1px solid #3b4261;
+  border-radius: 8px;
+  color: #c0caf5;
+  font-size: 15px;
+  outline: none;
+}
+
+.bn-search-input:focus {
+  border-color: #7aa2f7;
+  box-shadow: 0 0 0 2px rgba(122, 162, 247, 0.2);
+}
+
+.bn-search-input::placeholder {
+  color: #565f89;
+}
+
+.bn-panes {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bn-folder-pane {
+  width: 220px;
+  border-right: 1px solid #3b4261;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.bn-bookmark-pane {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.bn-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  color: #c0caf5;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bn-item:hover {
+  background: #24283b;
+}
+
+.bn-item.selected {
+  background: #3b4261;
+  color: #7aa2f7;
+}
+
+.bn-folder-item {
+  font-weight: 600;
+}
+
+.bn-bookmark-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bn-bookmark-url {
+  font-size: 11px;
+  color: #565f89;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bn-item.selected .bn-bookmark-url {
+  color: #7aa2f7;
+  opacity: 0.7;
+}
+
+.bn-empty {
+  padding: 20px;
+  text-align: center;
+  color: #565f89;
+  font-size: 13px;
+}
+
+.bn-hint {
+  padding: 8px 12px;
+  border-top: 1px solid #3b4261;
+  color: #565f89;
+  font-size: 11px;
+  display: flex;
+  gap: 12px;
+}
+
+.bn-hint kbd {
+  background: #24283b;
+  border: 1px solid #3b4261;
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-family: monospace;
+  font-size: 11px;
+  color: #c0caf5;
+}
+
+/* ── Focused pane indicator ── */
+
+.bn-folder-pane,
+.bn-bookmark-pane {
+  position: relative;
+  transition: opacity 0.15s ease;
+}
+
+/* Dimmed pane: not focused — selected item looks muted */
+.bn-folder-pane:not(.focused),
+.bn-bookmark-pane:not(.focused) {
+  opacity: 0.45;
+}
+
+/* Focused pane: active border accent */
+.bn-folder-pane.focused {
+  border-left: 3px solid #7aa2f7;
+}
+
+.bn-bookmark-pane.focused {
+  border-left: 3px solid #7aa2f7;
+}
+
+/* Scrollbar styling */
+.bn-folder-pane::-webkit-scrollbar,
+.bn-bookmark-pane::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bn-folder-pane::-webkit-scrollbar-track,
+.bn-bookmark-pane::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bn-folder-pane::-webkit-scrollbar-thumb,
+.bn-bookmark-pane::-webkit-scrollbar-thumb {
+  background: #3b4261;
+  border-radius: 3px;
+}
+
+.bn-folder-pane::-webkit-scrollbar-thumb:hover,
+.bn-bookmark-pane::-webkit-scrollbar-thumb:hover {
+  background: #565f89;
+}
+
+/* Focus trap input - hidden but keeps Vimium in Insert Mode */
+.bn-focus-trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}

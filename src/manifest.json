@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Bookmark Navigator",
+  "version": "0.1.0",
+  "description": "Vim-style bookmark navigator — Telescope/Raycast for your bookmarks",
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/keyblock.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/overlay.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "commands": {
+    "open-bookmark-navigator": {
+      "suggested_key": {
+        "default": "Alt+B",
+        "mac": "Alt+B"
+      },
+      "description": "Open Bookmark Navigator"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
