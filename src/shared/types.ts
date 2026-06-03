@@ -45,7 +45,8 @@ export type KeyAction =
   | { type: 'search'; text: string }
   | { type: 'jumpToTop' }
   | { type: 'jumpToBottom' }
-  | { type: 'toggleSearch' };
+  | { type: 'toggleSearch' }
+  | { type: 'exitSearch' };
 
 // ── Storage types ──
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { BookmarkItem, AppState, KeyAction } from '../shared/types';
 import { buildBookmarkIndex } from '../shared/bookmark';
 import { createSearchIndex, searchBookmarks } from '../shared/search';
+import { setKeyActionHandler, getUnmountCallback, setSearchHasText } from '../shared/overlay-bridge';
 import { Overlay } from './Overlay';
 import { SearchInput } from './SearchInput';
 import { FolderPane } from './FolderPane';
@@ -86,7 +87,8 @@ export function App() {
 
   // ── Close overlay ──
   const close = useCallback(() => {
-    window.postMessage({ type: 'BOOKMARK_NAV_CLOSE' }, '*');
+    const unmount = getUnmountCallback();
+    if (unmount) unmount();
   }, []);
 
   // ── Open bookmark (via background service worker) ──
@@ -141,6 +143,13 @@ export function App() {
         case 'close':
           close();
           return prev;
+        case 'exitSearch':
+          // Exit search mode: clear text, return focus to focus trap
+          // Note: focus trap re-focus is handled by overlay.tsx
+          setSearchMode(false);
+          setIsSearchFocused(false);
+          setSearchHasText(false);
+          return { ...prev, searchText: '', selectedBookmarkIndex: 0 };
         case 'jumpToTop':
           if (prev.focusPane === 'folder') {
             return { ...prev, selectedFolderIndex: 0 };
@@ -162,10 +171,10 @@ export function App() {
   }, [isSearchFocused, searchMode, searchResults, displayedBookmarks, openBookmark, close]);
 
 
-  // ── Register native key handler ──
+  // ── Register native key handler (via exported callback, not window global) ──
   useEffect(() => {
-    (window as any).__bookmarkNavKeyHandler = handleKeyAction;
-    return () => { delete (window as any).__bookmarkNavKeyHandler; };
+    setKeyActionHandler(handleKeyAction);
+    return () => { setKeyActionHandler(null); };
   }, [handleKeyAction]);
 
   // ── Search text change ──
@@ -176,6 +185,14 @@ export function App() {
     }
   }, []);
 
+  // ── Exit search: reset to folder/bookmark view ──
+  const handleExitSearch = useCallback(() => {
+    setSearchMode(false);
+    setIsSearchFocused(false);
+    setSearchHasText(false);
+    setState(prev => ({ ...prev, searchText: '', selectedBookmarkIndex: 0 }));
+  }, []);
+
   return (
     <Overlay onClose={close}>
       <SearchInput
@@ -183,6 +200,7 @@ export function App() {
         onChange={handleSearchChange}
         isFocused={isSearchFocused}
         onFocusChange={setIsSearchFocused}
+        onExitSearch={handleExitSearch}
       />
       <div className="bn-panes">
         {searchMode || searchResults ? (
@@ -217,7 +235,8 @@ export function App() {
         <span><kbd>Enter</kbd> Open</span>
         <span><kbd>Ctrl+Enter</kbd> New tab</span>
         <span><kbd>/</kbd> Search</span>
-        <span><kbd>Esc</kbd> Close</span>
+        <span><kbd>q</kbd> Close</span>
+        <span><kbd>Tab</kbd> Exit search</span>
       </div>
     </Overlay>
   );
