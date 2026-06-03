@@ -16,19 +16,23 @@
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-|---|---|
-| `Alt+B` | Open / close overlay |
-| `j` | Move down |
-| `k` | Move up |
-| `h` | Focus folder pane |
-| `l` | Focus bookmark pane |
-| `Enter` | Open bookmark in current tab |
-| `Ctrl+Enter` | Open bookmark in new tab |
-| `/` | Toggle search mode |
-| `Esc` | Close overlay |
-| `g` | Jump to top |
-| `G` | Jump to bottom |
+| Key | Mode | Action |
+|---|---|---|
+| `Alt+B` | Any | Open / close overlay |
+| `j` | Normal | Move down |
+| `k` | Normal | Move up |
+| `h` | Normal | Focus folder pane |
+| `l` | Normal | Focus bookmark pane |
+| `g` | Normal | Jump to top |
+| `G` | Normal | Jump to bottom |
+| `Enter` | Normal | Open bookmark in current tab |
+| `Ctrl+Enter` | Normal | Open bookmark in new tab |
+| `/` | Normal | Enter search mode |
+| `q` | Normal | Close overlay |
+| `Ctrl+j` | Search | Move down |
+| `Ctrl+k` | Search | Move up |
+| `Tab` | Search | Exit search, return to bookmark view |
+| `Esc` | Search | Exit search (best-effort; may be intercepted by Vimium) |
 
 ## Install
 
@@ -65,7 +69,8 @@ src/
 │   └── keyblock.ts                 # Placeholder for key interception
 ├── shared/
 │   ├── types.ts                    # AppState, KeyAction, BookmarkItem, etc.
-│   ├── keys.ts                     # parseKeyEvent — keyboard → KeyAction mapping
+│   ├── keys.ts                     # parseKeyEvent — keyboard → KeyAction mapping (ESC, Tab, Vim keys)
+│   ├── overlay-bridge.ts           # Overlay ↔ React communication (breaks circular dep)
 │   ├── bookmark.ts                 # buildBookmarkIndex — flatten bookmark tree
 │   ├── search.ts                   # createSearchIndex / searchBookmarks (Fuse.js)
 │   └── storage.ts                  # chrome.storage helpers for recent bookmarks
@@ -82,8 +87,11 @@ src/
 1. **Alt+B** triggers `toggleOverlay()` via content script keydown listener + Chrome commands API
 2. Overlay mounts inside a **Shadow DOM** for style isolation
 3. A hidden `<input>` focus trap forces Vimium into Insert Mode, preventing hjkl conflicts
-4. Native `keydown` on `shadowRoot` captures keys, parses them via `parseKeyEvent()`, and forwards `KeyAction` objects to React via `window.__bookmarkNavKeyHandler`
-5. `chrome.bookmarks.getTree()` runs in the background service worker; content script communicates via `chrome.runtime.sendMessage`
+4. All keyboard events are captured on **`window` in capture phase** (Vimium pattern) — before Vimium or page scripts can intercept them
+5. `parseKeyEvent()` maps keys to `KeyAction` objects, forwarded to React via the `overlay-bridge` module
+6. Consumed keys get `preventDefault()` + `stopImmediatePropagation()` + a one-shot keyup suppressor (Vimium `consumeKeyup` pattern) to prevent orphan events
+7. IME composition events (keyCode 229) are filtered out to avoid false ESC triggers
+8. `chrome.bookmarks.getTree()` runs in the background service worker; content script communicates via `chrome.runtime.sendMessage`
 
 ## License
 
